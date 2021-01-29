@@ -45,17 +45,12 @@ func (a *Account) Withdraw(amount float64) error {
 }
 
 func (a *Account) Transfer(amount float64, destinationId int) error {
-	if a.balance < amount {
-		return InsufficientFundsError
-	}
-
-	destination := GetAccount(destinationId)
-
 	err := a.Withdraw(amount)
 	if err != nil {
 		return err
 	}
 
+	destination := GetAccount(destinationId)
 	err = destination.Deposit(amount)
 	if err != nil {
 		return err

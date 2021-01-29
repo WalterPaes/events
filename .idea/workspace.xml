@@ -4,6 +4,7 @@
     <list default="true" id="e2ee666d-a7ad-4b85-9604-db75479e63ce" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pkg/domains/account/model.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/domains/account/model.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/domains/account/account_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/tests/domains/account/account_test.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
