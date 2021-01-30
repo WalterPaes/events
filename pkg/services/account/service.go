@@ -35,54 +35,51 @@ func (svc Service) GetAccount(id int) (account2.Account, error) {
 	return acc, err
 }
 
-func (svc Service) Deposit(id int, amount float64) error {
+func (svc Service) Deposit(id int, amount float64) (account2.Account, error) {
+	var acc account2.Account
+
 	if amount < 0 {
-		return InvalidValueOfAmountError
+		return acc, InvalidValueOfAmountError
 	}
 
 	acc, err := svc.repository.GetById(id)
 	if err != nil {
-		return err
+		return acc, err
 	}
 
 	acc.Deposit(amount)
-	return nil
+	return acc, nil
 }
 
-func (svc Service) Withdraw(id int, amount float64) error {
+func (svc Service) Withdraw(id int, amount float64) (account2.Account, error) {
+	var acc account2.Account
+
 	acc, err := svc.repository.GetById(id)
 	if err != nil {
-		return err
+		return acc, err
 	}
 
 	if acc.GetBalance() < amount {
-		return InsufficientFundsError
+		return acc, InsufficientFundsError
 	}
 
 	acc.Withdraw(amount)
-	return nil
+	return acc, nil
 }
 
-func (svc Service) Transfer(amount float64, originId, destinationId int) error {
-	origin, err := svc.GetAccount(originId)
+func (svc Service) Transfer(amount float64, originId, destinationId int) (account2.Account, account2.Account, error) {
+	var origin account2.Account
+	var destination account2.Account
+
+	origin, err := svc.Withdraw(originId, amount)
 	if err != nil {
-		return err
+		return origin, destination, err
 	}
 
-	err = svc.Withdraw(origin.GetId(), amount)
+	destination, err = svc.Deposit(destinationId, amount)
 	if err != nil {
-		return err
+		return origin, destination, err
 	}
 
-	destination, err := svc.GetAccount(destinationId)
-	if err != nil {
-		return err
-	}
-
-	err = svc.Deposit(destination.GetId(), amount)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return origin, destination, nil
 }

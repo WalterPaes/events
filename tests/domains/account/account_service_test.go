@@ -43,7 +43,7 @@ func TestAccountGetId(t *testing.T) {
 func TestAccountDeposit(t *testing.T) {
 	t.Run("Success Case", func(t *testing.T) {
 		service := account3.NewService(&account2.RepositorySuccess{})
-		err := service.Deposit(100, 250.0)
+		_, err := service.Deposit(100, 250.0)
 		if err != nil {
 			t.Error("Errors wasn't expected")
 		}
@@ -51,7 +51,7 @@ func TestAccountDeposit(t *testing.T) {
 
 	t.Run("Error Case", func(t *testing.T) {
 		service := account3.NewService(&account2.RepositoryFail{})
-		err := service.Deposit(100, 250.0)
+		_, err := service.Deposit(100, 250.0)
 		if err == nil {
 			t.Error("Errors was expected")
 		}
@@ -61,7 +61,7 @@ func TestAccountDeposit(t *testing.T) {
 func TestAccountWithdraw(t *testing.T) {
 	t.Run("Success Case", func(t *testing.T) {
 		service := account3.NewService(&account2.RepositorySuccess{})
-		err := service.Withdraw(100, 250.0)
+		_, err := service.Withdraw(100, 250.0)
 		if err != nil {
 			t.Error("Errors wasn't expected")
 		}
@@ -69,7 +69,7 @@ func TestAccountWithdraw(t *testing.T) {
 
 	t.Run("Error Case", func(t *testing.T) {
 		service := account3.NewService(&account2.RepositoryFail{})
-		err := service.Withdraw(100, 250.0)
+		_, err := service.Withdraw(100, 250.0)
 		if err == nil {
 			t.Error("Errors was expected")
 		}
@@ -79,18 +79,7 @@ func TestAccountWithdraw(t *testing.T) {
 func TestAccountTransfer(t *testing.T) {
 	t.Run("Success Case", func(t *testing.T) {
 		service := account3.NewService(&account2.RepositorySuccess{})
-
-		origin, err := service.GetAccount(100)
-		if err != nil {
-			t.Fatal("Errors wasn't expected")
-		}
-
-		destination, err := service.GetAccount(101)
-		if err != nil {
-			t.Fatal("Errors wasn't expected")
-		}
-
-		err = service.Transfer(250.0, origin.GetId(), destination.GetId())
+		_, _, err := service.Transfer(250.0, 100, 101)
 		if err != nil {
 			t.Error("Errors wasn't expected")
 		}
