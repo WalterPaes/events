@@ -2,7 +2,7 @@ package event
 
 import (
 	"errors"
-	"events/pkg/domains/account"
+	"events/pkg/services/account"
 )
 
 type EventType string
@@ -20,20 +20,16 @@ type Event struct {
 	Origin      int       `json:"origin"`
 }
 
-func (e *Event) Handler() error {
+func (e *Event) Handler(svc account.Service) error {
 	var err error
 
 	switch e.Type {
 	case deposit:
-		acc := account.GetAccount(e.Destination)
-		err = acc.Deposit(e.Amount)
+		err = svc.Deposit(e.Destination, e.Amount)
 	case withdraw:
-		acc := account.GetAccount(e.Origin)
-		err = acc.Withdraw(e.Amount)
+		err = svc.Withdraw(e.Origin, e.Amount)
 	case transfer:
-		accOr := account.GetAccount(e.Origin)
-		accDest := account.GetAccount(e.Destination)
-		err = accOr.Transfer(e.Amount, accDest.GetId())
+		err = svc.Transfer(e.Amount, e.Origin, e.Destination)
 	default:
 		err = errors.New("invalid event")
 	}
