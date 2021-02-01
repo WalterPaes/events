@@ -4,6 +4,7 @@ import (
 	"errors"
 	account2 "events/pkg/domains/account"
 	"events/pkg/repositories/account"
+	"fmt"
 )
 
 var (
@@ -36,6 +37,7 @@ func (svc Service) GetAccount(id int) (account2.Account, error) {
 }
 
 func (svc Service) Deposit(id int, amount float64) (account2.Account, error) {
+	fmt.Println("Deposit", id, amount)
 	var acc account2.Account
 
 	if amount < 0 {
@@ -44,10 +46,18 @@ func (svc Service) Deposit(id int, amount float64) (account2.Account, error) {
 
 	acc, err := svc.repository.GetById(id)
 	if err != nil {
-		return acc, err
+		acc, err = svc.Create(id)
+		if err != nil {
+			return acc, err
+		}
 	}
 
 	acc.Deposit(amount)
+	acc, err = svc.repository.Update(acc)
+	if err != nil {
+		return acc, err
+	}
+
 	return acc, nil
 }
 
@@ -64,6 +74,10 @@ func (svc Service) Withdraw(id int, amount float64) (account2.Account, error) {
 	}
 
 	acc.Withdraw(amount)
+	acc, err = svc.repository.Update(acc)
+	if err != nil {
+		return acc, err
+	}
 	return acc, nil
 }
 
@@ -81,5 +95,18 @@ func (svc Service) Transfer(amount float64, originId, destinationId int) (accoun
 		return origin, destination, err
 	}
 
+	origin, err = svc.repository.Update(origin)
+	if err != nil {
+		return origin, destination, err
+	}
+
+	destination, err = svc.repository.Update(destination)
+	if err != nil {
+		return origin, destination, err
+	}
 	return origin, destination, nil
+}
+
+func (svc Service) Reset() {
+	svc.repository.Reset()
 }

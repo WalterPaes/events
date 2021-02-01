@@ -15,22 +15,36 @@ func NewAccountController(svc account.Service) *AccountController {
 	return &AccountController{svc: svc}
 }
 
+func (ac AccountController) Reset(w http.ResponseWriter, _ *http.Request) {
+	ac.svc.Reset()
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, "OK")
+}
+
 func (ac AccountController) Balance(w http.ResponseWriter, r *http.Request) {
+	contentType := "text/plain"
+	status := http.StatusOK
+	var message interface{}
+
 	accountId, err := strconv.Atoi(r.URL.Query().Get("account_id"))
 	if err != nil {
-		w.Header().Set("Content-Type", "text/plain")
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprint(w, err.Error())
+		status = http.StatusInternalServerError
+		message = err.Error()
 	}
 
 	acc, err := ac.svc.GetAccount(accountId)
 	if err != nil {
-		w.Header().Set("Content-Type", "text/plain")
-		w.WriteHeader(http.StatusNotFound)
-		fmt.Fprint(w, 0)
+		fmt.Println(err)
+		status = http.StatusNotFound
+		message = "0"
 	}
 
-	w.Header().Set("Content-Type", "text/plain")
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprint(w, acc.GetBalance())
+	if err == nil {
+		message = acc.GetBalance()
+	}
+
+	w.Header().Set("Content-Type", contentType)
+	w.WriteHeader(status)
+	fmt.Fprint(w, message)
 }

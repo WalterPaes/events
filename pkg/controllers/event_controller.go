@@ -20,16 +20,33 @@ func NewEventController(svc account.Service) *EventController {
 func (ec EventController) Event(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
+	contentType := "text/plain"
+	status := http.StatusCreated
+	var message interface{}
+
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		w.Header().Set("Content-Type", "text/plain")
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprint(w, err.Error())
+		status = http.StatusInternalServerError
+		message = err.Error()
 	}
 
 	var ev *event.Event
 	err = json.Unmarshal(body, &ev)
 
-	ev.Handler(ec.svc)
+	result, err := ev.Handler(ec.svc)
+	if err != nil {
+		fmt.Println(err)
+		status = http.StatusNotFound
+		message = "0"
+	}
 
+	if err == nil {
+		contentType = "application/json"
+		status = http.StatusCreated
+		message = result
+	}
+
+	w.Header().Set("Content-Type", contentType)
+	w.WriteHeader(status)
+	fmt.Fprint(w, message)
 }

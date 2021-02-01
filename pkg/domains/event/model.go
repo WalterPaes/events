@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"events/pkg/services/account"
+	"strconv"
 )
 
 type EventType string
@@ -17,8 +18,8 @@ const (
 type Event struct {
 	Type        EventType `json:"type"`
 	Amount      float64   `json:"amount"`
-	Destination int       `json:"destination,omitempty"`
-	Origin      int       `json:"origin,omitempty"`
+	Destination string    `json:"destination,omitempty"`
+	Origin      string    `json:"origin,omitempty"`
 }
 
 type EventResponse struct {
@@ -35,73 +36,77 @@ type EventResponse struct {
 func (e *Event) Handler(svc account.Service) (string, error) {
 	switch e.Type {
 	case deposit:
-		acc, err := svc.Deposit(e.Destination, e.Amount)
+		destination, _ := strconv.Atoi(e.Destination)
+		acc, err := svc.Deposit(destination, e.Amount)
 		if err != nil {
 			return "", err
 		}
 
-		er := &EventResponse{
-			Destination: struct {
-				ID      int     `json:"id"`
+		var result struct {
+			Destination struct {
+				ID      string     `json:"id"`
 				Balance float64 `json:"balance"`
-			}{
-				acc.GetId(),
-				acc.GetBalance(),
-			},
+			} `json:"destination"`
 		}
 
-		response, err := json.Marshal(er)
+		result.Destination.ID = strconv.Itoa(acc.GetId())
+		result.Destination.Balance = acc.GetBalance()
+
+		response, err := json.Marshal(result)
 		if err != nil {
 			return "", err
 		}
 
 		return string(response), nil
 	case withdraw:
-		acc, err := svc.Withdraw(e.Origin, e.Amount)
+		origin, _ := strconv.Atoi(e.Origin)
+		acc, err := svc.Withdraw(origin, e.Amount)
 		if err != nil {
 			return "", err
 		}
 
-		er := &EventResponse{
-			Origin: struct {
-				ID      int     `json:"id"`
+		var result struct {
+			Origin struct {
+				ID      string     `json:"id"`
 				Balance float64 `json:"balance"`
-			}{
-				acc.GetId(),
-				acc.GetBalance(),
-			},
+			} `json:"origin"`
 		}
 
-		response, err := json.Marshal(er)
+		result.Origin.ID = strconv.Itoa(acc.GetId())
+		result.Origin.Balance = acc.GetBalance()
+
+		response, err := json.Marshal(result)
 		if err != nil {
 			return "", err
 		}
 
 		return string(response), nil
 	case transfer:
-		origin, destination, err := svc.Transfer(e.Amount, e.Origin, e.Destination)
+		destinationId, _ := strconv.Atoi(e.Destination)
+		originId, _ := strconv.Atoi(e.Origin)
+
+		origin, destination, err := svc.Transfer(e.Amount, originId, destinationId)
 		if err != nil {
 			return "", err
 		}
 
-		er := &EventResponse{
-			Destination: struct {
-				ID      int     `json:"id"`
+		var result struct {
+			Origin struct {
+				ID      string     `json:"id"`
 				Balance float64 `json:"balance"`
-			}{
-				destination.GetId(),
-				destination.GetBalance(),
-			},
-			Origin: struct {
-				ID      int     `json:"id"`
+			} `json:"origin"`
+			Destination struct {
+				ID      string     `json:"id"`
 				Balance float64 `json:"balance"`
-			}{
-				origin.GetId(),
-				origin.GetBalance(),
-			},
+			} `json:"destination"`
 		}
 
-		response, err := json.Marshal(er)
+		result.Origin.ID = strconv.Itoa(origin.GetId())
+		result.Origin.Balance = origin.GetBalance()
+		result.Destination.ID = strconv.Itoa(destination.GetId())
+		result.Destination.Balance = destination.GetBalance()
+
+		response, err := json.Marshal(result)
 		if err != nil {
 			return "", err
 		}

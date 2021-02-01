@@ -10,19 +10,19 @@ import (
 )
 
 func main() {
+	repository := account2.NewAccountRepository()
 	accountController := controllers.NewAccountController(
-		account.NewService(&account2.AccountRepository{}))
+		account.NewService(repository))
 
 	eventController := controllers.NewEventController(
-		account.NewService(&account2.AccountRepository{}))
+		account.NewService(repository))
 
 	r := mux.NewRouter()
-	//r.HandleFunc("/reset", nil).Methods("POST")
+	r.HandleFunc("/reset", accountController.Reset).Methods("POST")
 	r.HandleFunc("/balance", accountController.Balance).Methods("GET")
 	r.HandleFunc("/event", eventController.Event).Methods("POST")
 	http.Handle("/", r)
 
-	http.ListenAndServe(":8081", r)
 	log.Println("Server is Ok!")
-	log.Fatal(http.ListenAndServe(":3000", nil))
+	log.Fatal(http.ListenAndServe(":3000", r))
 }
